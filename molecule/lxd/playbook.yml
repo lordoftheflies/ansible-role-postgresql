@@ -1,0 +1,9 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    - postgresql_deployment_users_home: /root
+    - postgresql_testing_provider: lxd
+
+  roles:
+    - postgresql

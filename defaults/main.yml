@@ -1,0 +1,237 @@
+---
+# roles/postgresql/defaults/main.yml
+
+postgresql_debug: false
+
+postgresql_controller_user: '{{ project_controller_user }}'
+postgresql_controller_home: '{{ project_controller_home }}'
+postgresql_controller_resources_root: '{{ project_controller_resources_home }}'
+
+postgresql_deployment_user: '{{ project_deployment_user }}'
+postgresql_deployment_home: '{{ project_deployment_home }}'
+postgresql_deployment_resources_root: '{{ project_deployment_resources_home }}'
+
+## atomic versioning example
+#
+# postgresql_major: '0'
+# postgresql_moderate_revision: '0'
+# postgresql_minor_revision: '1'
+# postgresql_build: ''
+
+## Package #
+
+postgresql_package_state: 'present'
+postgresql_package_version: '2.0.1'
+postgresql_package_filename: "vagrant_{{ postgresql_package_version }}_i686.deb"
+
+postgresql_controller_resources_dir: '{{ postgresql_controller_resources_root }}/sw/vagrant/debs'
+postgresql_deployment_resources_dir: '{{ postgresql_deployment_resources_root }}/vagrant/debs'
+
+# /tests/sw/{{ ansible_distribution| lower }}/{{ ansible_distribution_version }}/miniconda'
+
+# Help file
+
+postgresql_acemenu_help_file_template_path: '{{ fact_role_path }}/templates/bin/acemenu/help/example_aceadmin_helpfile.md.j2'
+
+# Resources
+
+postgresql_package_url: "https://releases.hashicorp.com/vagrant/2.0.1/vagrant_2.0.1_i686.deb"
+# postgresql_checksum_url: "https://releases.hashicorp.com/vagrant/2.0.1/ vagrant_2.0.1_SHA256SUMS"
+# postgresql_checksum_sig_url: "https://releases.hashicorp.com/vagrant/2.0.1/ vagrant_2.0.1_SHA256SUMS.sig"
+
+## links
+
+postgresql_default_link_force: true
+
+########################################
+
+# Resources
+
+postgresql_resources_on_local:
+
+  postgresql_local_directories:
+
+    state: 'directory'
+    path: '{{ postgresql_controller_resources_dir }}'
+    owner: '{{ postgresql_controller_user }}'
+    group: '{{ postgresql_controller_user }}'
+    mode: '0755'
+
+  postgresql_local_clones:
+
+    become: ''
+    repo: 'https://github.com/cjsteel/script-bash-acemenu.git'
+    dest: '{{ postgresql_controller_resources_dir }}/acemenu'
+    mode: '0700'
+    clone: true
+
+  postgresql_local_downloads:
+
+    url: 'https://repo.continuum.io/miniconda/Miniconda2-4.3.30-Linux-x86_64.sh'
+    dest: '{{ postgresql_controller_resources_dir }}/Miniconda2-latest-Linux-x86_64.sh'
+    owner: '{{ postgresql_controller_user }}'
+    group: '{{ postgresql_controller_user }}'
+    mode: '0700'
+    checksum: 'md5:bd1655b4b313f7b2a1f2e15b7b925d03'
+    resource_type: 'url'
+
+  postgresql_local_file_copies:
+
+    state: "copy"
+    src: './files/example_playbook.yml'
+    dest: '{{ postgresql_controller_resources_dir }}/copy_test.yml'
+    owner: '{{ postgresql_controller_user }}'
+    group: '{{ postgresql_controller_user }}'
+    mode: '0700'
+
+  postgresql_local_file_touches:
+
+    state: 'touch'
+    path: '{{ postgresql_controller_resources_dir }}/copy_test.yml'
+    owner: '{{ postgresql_controller_user }}'
+    group: '{{ postgresql_controller_user }}'
+    mode: '0770'
+
+  postgresql_local_templated_files:
+
+
+    state: 'template'
+    src: './templates/template_test.md.j2'
+    dest: '{{ postgresql_controller_resources_dir }}/test.md'
+    owner: '{{ postgresql_controller_user }}'
+    group: '{{ postgresql_controller_user }}'
+    mode: '0700'
+
+  postgresql_local_blocksinfile:
+
+    type: 'blockinfile'
+    path: '{{ postgresql_controller_resources_dir }}/test.md'
+    owner: '{{ postgresql_controller_user }}'
+    group: '{{ postgresql_controller_user }}'
+    mode: '0700'
+    insertafter: "EOF"
+    block: |
+      # if running bash
+      if [ -n "$BASH_VERSION" ]; then
+          # include /opt/display/bin/display if it exists
+          if [ -f "/opt/display/bin/display" ]; then
+              PATH="/opt/display/bin:$PATH"
+
+       	. "/opt/display/bin/"
+          fi
+      fi
+    state: "present"
+
+  postgresql_local_standard_sym_links:
+
+    state: "link"
+    src: '{{ postgresql_controller_resources_dir }}/test.md'
+    dest: '{{ postgresql_controller_resources_dir }}/my_local_link'
+    owner: '{{ postgresql_controller_user }}'
+    group: '{{ postgresql_controller_user }}'
+    mode: '0700'
+    force: '{{ postgresql_default_link_force }}'
+
+  postgresql_local_relative_sym_links:
+
+    link_name: 'relative_link'
+    link_target: 'test.md'
+    link_dir: '{{ postgresql_controller_resources_dir }}'
+    state: 'relative_link'
+#    owner: '{{ postgresql_controller_user }}'
+#    group: '{{ postgresql_controller_user }}'
+#    mode: '0700'
+
+postgresql_resources_on_remote:
+
+  postgresql_remote_directories:
+
+    state: 'directory'
+    path: '{{ postgresql_deployment_resources_dir }}'
+    owner: '{{ postgresql_deployment_user }}'
+    group: '{{ postgresql_deployment_user }}'
+    mode: '0755'
+
+  postgresql_remote_clones:
+
+    become: true
+    repo: 'https://github.com/cjsteel/script-bash-acemenu.git'
+    dest: '{{ postgresql_deployment_resources_dir }}/acemenu'
+    mode: '0700'
+    clone: true
+
+  postgresql_remote_downloads:
+
+    url: 'https://repo.continuum.io/miniconda/Miniconda2-4.3.30-Linux-x86_64.sh'
+    dest: '{{ postgresql_deployment_resources_dir }}/Miniconda2-latest-Linux-x86_64.sh'
+    owner: '{{ postgresql_deployment_user }}'
+    group: '{{ postgresql_deployment_user }}'
+    mode: '0700'
+    checksum: 'md5:bd1655b4b313f7b2a1f2e15b7b925d03'
+    resource_type: 'url'
+
+  postgresql_remote_file_copies:
+
+    state: "copy"
+    src: './files/example_playbook.yml'
+    dest: '{{ postgresql_deployment_resources_dir }}/copy_test.yml'
+    owner: '{{ postgresql_deployment_user }}'
+    group: '{{ postgresql_deployment_user }}'
+    mode: '0700'
+
+  postgresql_remote_file_touches:
+
+    state: 'touch'
+    path: '{{ postgresql_deployment_resources_dir }}/copy_test.yml'
+    owner: '{{ postgresql_deployment_user }}'
+    group: '{{ postgresql_deployment_user }}'
+    mode: '0770'
+
+  postgresql_remote_templates_files:
+
+    state: 'template'
+    src: './templates/template_test.md.j2'
+    dest: '{{ postgresql_deployment_resources_dir }}/test.md'
+    owner: '{{ postgresql_deployment_user }}'
+    group: '{{ postgresql_deployment_user }}'
+    mode: '0700'
+
+  postgresql_remote_blocksinfile:
+
+    type: 'blockinfile'
+    path: '{{ postgresql_deployment_resources_dir }}/test.md'
+    owner: '{{ postgresql_deployment_user }}'
+    group: '{{ postgresql_deployment_user }}'
+    mode: '0700'
+    insertafter: "EOF"
+    block: |
+      # if running bash
+      if [ -n "$BASH_VERSION" ]; then
+          # include /opt/display/bin/display if it exists
+          if [ -f "/opt/display/bin/display" ]; then
+              PATH="/opt/display/bin:$PATH"
+
+       	. "/opt/display/bin/"
+          fi
+      fi
+    state: "present"
+
+  postgresql_remote_standard_sym_links:
+
+    state: 'link'
+    src: '{{ postgresql_deployment_resources_dir }}/test.md'
+    dest: '{{ postgresql_deployment_resources_dir }}/my_remote_link'
+    owner: '{{ postgresql_deployment_user }}'
+    group: '{{ postgresql_deployment_user }}'
+    mode: '0700'
+    force: '{{ postgresql_default_link_force }}'
+
+  postgresql_remote_relative_sym_links:
+
+    state: 'relative_link'
+    link_dir: '{{ postgresql_deployment_resources_dir }}'
+    link_name: 'my_relative_link'
+    link_target: 'test.md'
+    owner: '{{ postgresql_deployment_user }}'
+    group: '{{ postgresql_deployment_user }}'
+    mode: '0700'

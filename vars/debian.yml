@@ -1,0 +1,5 @@
+---
+# roles/postgresql/vars/debian.yml
+
+# Debian specific vars
+postgresql_package_extension: 'deb'

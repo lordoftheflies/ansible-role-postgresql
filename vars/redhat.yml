@@ -1,0 +1,4 @@
+---
+# roles/postgresql/vars/debian.yml
+
+postgresql_package_extension: 'rpm'
